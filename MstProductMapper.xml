@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.internous.rainbow.model.mapper.MstProductMapper">
+
+	<!-- 
+		カテゴリが指定されている時の検索機能の処理
+		選択されているカテゴリの中からキーワードに一致する商品を探す
+		キーワードが空白区切りで複数あればどれかに一致する商品を探す
+		検索結果はidの低い順から順に表示する
+	 -->
+	<select id="findByCategoryAndProductName" resultType="jp.co.internous.rainbow.model.domain.MstProduct">
+	SELECT * FROM mst_product 
+	WHERE  category_id = #{category} AND 
+		<foreach item="keyword" collection="keywords" open="(" close=")" separator=""  index="idx">
+			<choose>
+				<when test="idx == 0">
+					(product_name LIKE '%${keyword}%') 
+				</when>
+				<otherwise>
+					OR (product_name LIKE '%${keyword}%') 
+				</otherwise>
+			</choose>
+		</foreach>
+		ORDER BY id;
+	</select>
+	
+	<!-- 
+		カテゴリが指定されていない時の検索機能の処理
+		全商品の中からキーワードに一致する商品を探す
+		キーワードが空白区切りで複数あればどれかに一致する商品を探す
+		検索結果はidの低い順から順に表示する
+	 -->
+	<select id="findByProductName" resultType="jp.co.internous.rainbow.model.domain.MstProduct">
+		SELECT * FROM mst_product
+		<foreach item="keyword" collection="keywords" open="" close="" separator="" index="idx">
+			<choose>
+				<when test="idx == 0">
+					WHERE (product_name LIKE '%${keyword}%')
+				</when>
+				<otherwise>
+					OR (product_name LIKE '%${keyword}%')
+				</otherwise>
+			</choose>
+		</foreach>
+		ORDER BY id;
+	</select>
+</mapper>
